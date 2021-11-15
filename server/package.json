@@ -5,11 +5,14 @@
   "main": "server.js",
   "scripts": {
     "start": "nodemon server.js",
+    "provision-all": "npm install && npm --prefix ../Producer run provision && npm --prefix ../Consumer run provision",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Benedict Marien",
   "license": "ISC",
   "dependencies": {
+    "js2xmlparser": "^4.0.2",
+    "json2csv": "^5.0.6",
     "ws": "^8.2.3",
     "xml2js": "^0.4.23"
   },

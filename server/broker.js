@@ -4,42 +4,39 @@ module.exports = class Broker {
     topics = [];
 
     newTopic(name) {
-        let output = {
-            status: undefined,
-            data: undefined
-        };
-
+        let existingTopic = false;
+        
         this.topics.forEach(topic => {
             if(topic.name == name) {
-                output = {
-                    status: 'error',
-                    data: undefined
-                }
+                existingTopic = true;
             }
         });
 
-        if(output.status === 'error') {
-            return output;
-        }
+        if(existingTopic === true) {
+            return false;
+        };
 
         const topic = new Topic(name);
-        output = {
-            status: 'ok',
-            data: topic
-        };
         this.topics.push(topic);
         
-        console.log('Topics:', this.topics)
-        return output;
+        console.log('Topics:', this.topics);
+        return topic;
     }
 
     getTopicsList() {
         return this.topics;
     }
 
-    getTopic(name) {
+    getTopicById(id) {
+        const topic = this.topics.filter(topic => topic.subscriber == id);
+
+        return topic[0];
+    }
+
+    getTopicByName(name) {
         const topic = this.topics.filter(topic => topic.name == name);
 
         return topic[0];
     }
+
 }

@@ -1,5 +1,6 @@
 
 module.exports = class Topic {
+    subscriber;
     messages = [];
     index = 0;
 
@@ -14,7 +15,7 @@ module.exports = class Topic {
             data: undefined
         };
 
-        if(this.index === this.messages.length - 1){
+        if(this.index === this.messages.length){
             output.status = 'idle';
         } else {
             output.status = 'ok';
@@ -22,6 +23,7 @@ module.exports = class Topic {
             this.index++;
         }
 
+        console.log('Sending:', output)
         return output;
     }
 

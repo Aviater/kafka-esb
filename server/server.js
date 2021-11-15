@@ -1,6 +1,7 @@
 const WebSocket = require('ws');
 const Broker = require('./broker');
-const { xmlToJson } = require('./transform');
+
+const { publish, produce, subscribe, consume } = require('./broker.layer');
 
 const broker = new Broker();
 
@@ -17,28 +18,20 @@ server.on('connection', socket => {
             msg = JSON.parse(payload);
         } catch(e){}
 
-        let topic;
         switch(msg.op) {
             case 'publish':
-                topic = broker.newTopic(msg.topic);
-                if (topic.status === 'ok') {
-                    console.log(`New topic: ${topic.data.name}`);
-                    socket.send(`${topic.data.name} topic created.`);
-                } else {
-                    socket.send('Topic already exists.');
-                }
+                publish(broker, socket, msg);
                 break;
             case 'produce':
-                topic = broker.getTopic(msg.topic);
-                topic.messages.push(xmlToJson(msg.data));
-                console.log(topic.messages);
-                socket.send(`${msg.topic} message added to queue.`);
+                produce(broker, socket, msg);
+                break;
+            case 'subscribe':
+                // }
+                subscribe(broker, socket, msg);
                 break;
             case 'consume':
-                topic = broker.getTopic(msg.topic);
-                const payload = topic.getHeadMessage();
-                
-                socket.send(JSON.stringify(payload));
+                consume(broker, socket, msg);
+                break;
             default:
                 console.log(`New message: ${msg}`);
         }

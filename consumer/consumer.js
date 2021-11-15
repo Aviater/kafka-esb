@@ -1,32 +1,48 @@
-const WebSocket = require('ws');
 
-const socket = new WebSocket('ws://localhost:8080');
+const { v4: uuidv4 } = require('uuid');
+const uuid = uuidv4();
 
-socket.on('open', () => {
+sendGreeting = (socket) => {
     console.log(`Socket opened: ${socket.url}.`);
 
-    // Send greeting
     socket.send(`Greetings from ${socket.url}.`);
+}
 
-    // Consume from topic
+subscribeTopic = (socket, name) => {
     let payload = {
-        op: 'consume',
-        topic: 'humidity',
-    }
+        op: 'subscribe',
+        topic: name,
+        id: uuid,
+        format: undefined
+    };
+    socket.send(JSON.stringify(payload));
 
-    // Debug
+    socket.on('message', msg => {
+        console.log('Server:', JSON.parse(msg));
+    });
+}
+
+consumeData = (socket, format='json') => {
+    payload = {
+        op: 'consume',
+        topic: undefined,
+        id: uuid,
+        format
+    };
+
+    // Poll for messages
     consume = () => {
         socket.send(JSON.stringify(payload));
     };
     const consumerInterval = setInterval(consume, 500);
 
+    // Handle data
     socket.on('message', msg => {
+        const message = JSON.parse(msg);
         if(message.status === 'idle') {
             clearInterval(consumerInterval);
-        };
-
-        const message = JSON.parse(msg);
-        console.log(`${message.topic} data recieved: ${JSON.stringify(message.data)}`);
+        }
     });
-    
-});
+}
+
+module.exports = { sendGreeting, subscribeTopic, consumeData }

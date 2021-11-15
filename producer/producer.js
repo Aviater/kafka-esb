@@ -1,40 +1,38 @@
-const WebSocket = require('ws');
-const { generateHumidityXML } = require('./xmlGenerator');
+const { generateHumidity } = require('./humidityGenerator');
+const { generateTemperature } = require('./temperatureGenerator');
 
-const socket = new WebSocket('ws://localhost:8080');
-
-socket.on('open', () => {
+sendGreeting = (socket) => {
     console.log(`Socket opened: ${socket.url}.`);
 
-    // Send greeting
     socket.send(`Greetings from ${socket.url}.`);
+}
 
-    // Publish topic
+publishTopic = (socket, name) => {
     let payload = {
         op: 'publish',
-        topic: 'humidity',
+        topic: name,
         data: undefined
     };
-    socket.send(JSON.stringify(payload));
 
-    // Debug - Send random data every second
+    socket.send(JSON.stringify(payload));
+}
+
+
+produceData = (socket, topic) => {
+    const payload = {
+        op: 'produce',
+        topic: topic,
+        data: undefined
+    };
+
+    // Debug - Send random data
     let count = 0;
     while(count < 10) {
-        socket.send(JSON.stringify(generateHumidityXML()));
+        payload.data = topic === 'humidity' ? generateHumidity() : generateTemperature();
+        
+        socket.send(JSON.stringify(payload));
         count++;
     }
-    
-});
+}
 
-
-// Listen for acknowledgements
-socket.on('message', msg => {
-    console.log(`Server: ${msg}`);
-})
-
-
-setTimeout(() => {
-    socket.close(1000);
-    console.log(`Socket closed: ${socket.url}.`);
-}, 10000);
-
+module.exports = { sendGreeting, publishTopic, produceData };
